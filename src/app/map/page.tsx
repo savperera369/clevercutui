@@ -16,8 +16,8 @@ const MapModePage = () => {
                     <p className="text-center font-semibold text-xl">
                         Manual Point Capture
                     </p>
-                    <div className="flex flex-col items-center p-4 gap-y-4">
-                        <input className="border-none bg-white p-4 text-sm w-1/2 rounded-md" type="text" placeholder="Add Coordinates of a Point"/>
+                    <div className="flex flex-col items-center p-4 gap-y-4 mt-2">
+                        <input className="border-none bg-white p-4 text-sm w-1/2 rounded-md mb-2" type="text" placeholder="Add Coordinates of a Point"/>
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
                             Add Point
                         </button>
