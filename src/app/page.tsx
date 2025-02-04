@@ -1,6 +1,6 @@
 import ExpandButton from "@/components/ExpandButton";
 
-const mapModeDescription = "This is Map Mode. In map mode, users can view a variety of different settings.";
+const mapModeDescription = "This is the core screen for manual point capture and mesh generation.";
 const trimModeDescription = "This is Trim Mode";
 
 export default function Home() {

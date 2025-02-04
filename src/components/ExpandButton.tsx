@@ -19,7 +19,7 @@ const ExpandButton = ({ buttonTitle, content, href } : Props) => {
 
     return (
         <div className="w-full border-none flex flex-col items-center justify-center p-4">
-            <button className="w-1/2 flex items-center justify-center gap-x-1 px-4 py-4 rounded-lg text-md font-medium bg-blue-500 text-white transition-all hover:bg-blue-700"
+            <button className="w-1/2 flex items-center justify-center gap-x-1 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
                     onClick={togglePanel}
             >
                 { icon }
