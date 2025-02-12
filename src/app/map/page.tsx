@@ -1,5 +1,4 @@
-import interactiveGridImage from "../../assets/interactiveGrid.png";
-import Image from "next/image";
+import ThreeDMesh from "@/components/ThreeDMesh";
 
 const MapModePage = () => {
     return (
@@ -10,7 +9,9 @@ const MapModePage = () => {
                     <p className="font-semibold text-xl mb-4">
                         3D Mesh Visualization
                     </p>
-                    <Image src={interactiveGridImage} alt="Interactive Grid" className="mb-4 w-1/2"/>
+                    <div className="w-full rounded-md h-full">
+                        <ThreeDMesh />
+                    </div>
                 </div>
                 <div className="border border-black rounded-md bg-gray-100 shadow-md p-4 w-1/2 max-h-1/2">
                     <p className="text-center font-semibold text-xl">
