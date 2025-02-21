@@ -24,18 +24,17 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bpoint.proto\x12\x05point\"\x07\n\x05\x45mpty\"(\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x32\x36\n\x0cPointService\x12&\n\x08GetPoint\x12\x0c.point.Empty\x1a\x0c.point.PointB\x1e\n\tcom.pointB\nPointProtoP\x01\xa2\x02\x02PTb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bpoint.proto\x12\tpoint_pb2\"\x07\n\x05\x45mpty\"(\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x32>\n\x0cPointService\x12.\n\x08GetPoint\x12\x10.point_pb2.Empty\x1a\x10.point_pb2.Pointb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'point_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-  _globals['DESCRIPTOR']._loaded_options = None
-  _globals['DESCRIPTOR']._serialized_options = b'\n\tcom.pointB\nPointProtoP\001\242\002\002PT'
-  _globals['_EMPTY']._serialized_start=22
-  _globals['_EMPTY']._serialized_end=29
-  _globals['_POINT']._serialized_start=31
-  _globals['_POINT']._serialized_end=71
-  _globals['_POINTSERVICE']._serialized_start=73
-  _globals['_POINTSERVICE']._serialized_end=127
+  DESCRIPTOR._loaded_options = None
+  _globals['_EMPTY']._serialized_start=26
+  _globals['_EMPTY']._serialized_end=33
+  _globals['_POINT']._serialized_start=35
+  _globals['_POINT']._serialized_end=75
+  _globals['_POINTSERVICE']._serialized_start=77
+  _globals['_POINTSERVICE']._serialized_end=139
 # @@protoc_insertion_point(module_scope)

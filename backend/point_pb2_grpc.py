@@ -35,7 +35,7 @@ class PointServiceStub(object):
             channel: A grpc.Channel.
         """
         self.GetPoint = channel.unary_unary(
-                '/point.PointService/GetPoint',
+                '/point_pb2.PointService/GetPoint',
                 request_serializer=point__pb2.Empty.SerializeToString,
                 response_deserializer=point__pb2.Point.FromString,
                 _registered_method=True)
@@ -60,9 +60,9 @@ def add_PointServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'point.PointService', rpc_method_handlers)
+            'point_pb2.PointService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('point.PointService', rpc_method_handlers)
+    server.add_registered_method_handlers('point_pb2.PointService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
@@ -83,7 +83,7 @@ class PointService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/point.PointService/GetPoint',
+            '/point_pb2.PointService/GetPoint',
             point__pb2.Empty.SerializeToString,
             point__pb2.Point.FromString,
             options,

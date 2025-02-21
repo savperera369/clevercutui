@@ -1,19 +1,15 @@
 syntax = "proto3";
 
-option java_multiple_files = true;
-option java_package = "com.point";
-option java_outer_classname = "PointProto";
-option objc_class_prefix = "PT";
-
-package point;
+package point_pb2;
 
 service PointService {
-    rpc GetPoint (Empty) returns (Point);
+  rpc GetPoint (Empty) returns (Point);
 }
 
 message Empty {}
+
 message Point {
-    float x = 1;
-    float y = 2;
-    float z = 3;
+  float x = 1;
+  float y = 2;
+  float z = 3;
 }
