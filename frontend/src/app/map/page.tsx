@@ -19,6 +19,7 @@ const MapModePage = () => {
             const decoder = new TextDecoder();
 
             while (true) {
+                // @ts-ignore
                 const { done, value } = await reader?.read();
                 if (done) break; // Exit the loop when the stream ends
 
