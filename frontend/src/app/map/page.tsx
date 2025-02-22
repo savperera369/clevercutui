@@ -56,9 +56,9 @@ const MapModePage = () => {
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
                             onClick={getPointStreamHandler}
                         >
-                            Add Point
+                            Get Points
                         </button>
-                        <p className="text-sm font-medium mb-4">Plot a point at the current position of the clippers.</p>
+                        <p className="text-sm font-medium mb-4">Get a continuous stream of points from GRPC server.</p>
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
                             Undo
                         </button>

@@ -34,6 +34,10 @@ export async function GET() {
                 stream.on('error', (err) => {
                     controller.error(err);
                 });
+
+                stream.on('abort', () => {
+                    console.error('Stream was aborted');
+                });
             },
         });
 

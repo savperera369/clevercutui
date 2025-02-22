@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -7,43 +7,47 @@ interface ThreeDMeshProps {
 }
 
 const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
-    const mountRef = useRef<HTMLDivElement>(null); // To attach the WebGLRenderer
-    const rendererRef = useRef<THREE.WebGLRenderer | null>(null); // Keep track of the renderer
+    const mountRef = useRef<HTMLDivElement>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const pointsMeshRef = useRef<THREE.Points | null>(null);
 
     useEffect(() => {
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.z = 10;
+        cameraRef.current = camera;
+        sceneRef.current = scene;
 
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight); // Initial size
+        renderer.setSize(window.innerWidth, window.innerHeight);
         rendererRef.current = renderer;
-        mountRef.current?.appendChild(renderer.domElement); // Attach renderer to the DOM
+        mountRef.current?.appendChild(renderer.domElement);
 
-        // Create a material for the points
         const material = new THREE.PointsMaterial({
             color: 'white',
-            size: 0.1, // Size of the points
+            size: 0.1,
             opacity: 0.7,
             transparent: true,
         });
 
-        // Create a geometry from the points
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-        // Create a points mesh
         const pointsMesh = new THREE.Points(geometry, material);
         scene.add(pointsMesh);
+        pointsMeshRef.current = pointsMesh;
 
-        // Create a lighting setup
-        const light = new THREE.AmbientLight(0x404040, 2); // Ambient light
+        const light = new THREE.AmbientLight(0x404040, 2);
         scene.add(light);
 
         const directionalLight = new THREE.DirectionalLight('white', 1);
         directionalLight.position.set(10, 10, 10).normalize();
         scene.add(directionalLight);
-
-        // Position the camera
-        camera.position.z = 10;
 
         const animate = () => {
             requestAnimationFrame(animate);
@@ -55,16 +59,15 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         animate();
 
         const onWindowResize = () => {
-            if (mountRef.current) {
+            if (mountRef.current && cameraRef.current && rendererRef.current) {
                 const width = mountRef.current.clientWidth;
                 const height = mountRef.current.clientHeight;
-                camera.aspect = width / height;
-                camera.updateProjectionMatrix();
-                renderer.setSize(width, height); // Adjust renderer size to the container size
+                cameraRef.current.aspect = width / height;
+                cameraRef.current.updateProjectionMatrix();
+                rendererRef.current.setSize(width, height);
             }
         };
 
-        // Use ResizeObserver to handle dynamic resizing of the container
         const resizeObserver = new ResizeObserver(onWindowResize);
         if (mountRef.current) {
             resizeObserver.observe(mountRef.current);
@@ -72,9 +75,16 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
         return () => {
             resizeObserver.disconnect();
-            window.removeEventListener('resize', onWindowResize);
             renderer.dispose();
         };
+    }, []);
+
+    useEffect(() => {
+        if (pointsMeshRef.current) {
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            pointsMeshRef.current.geometry.dispose();
+            pointsMeshRef.current.geometry = geometry;
+        }
     }, [points]);
 
     return <div ref={mountRef} className="w-full h-1/2"></div>;
