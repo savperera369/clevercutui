@@ -2,18 +2,11 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const generateRandomPoints = (numPoints: number) => {
-    const points = [];
-    for (let i = 0; i < numPoints; i++) {
-        const x = Math.random() * 10 - 5;
-        const y = Math.random() * 10 - 5;
-        const z = Math.random() * 10 - 5;
-        points.push(new THREE.Vector3(x, y, z));
-    }
-    return points;
-};
+interface ThreeDMeshProps {
+    points: THREE.Vector3[];
+}
 
-const ThreeDMesh = () => {
+const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     const mountRef = useRef<HTMLDivElement>(null); // To attach the WebGLRenderer
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null); // Keep track of the renderer
 
@@ -33,9 +26,6 @@ const ThreeDMesh = () => {
             opacity: 0.7,
             transparent: true,
         });
-
-        // Generate 1000 random points
-        const points = generateRandomPoints(1000);
 
         // Create a geometry from the points
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -85,7 +75,7 @@ const ThreeDMesh = () => {
             window.removeEventListener('resize', onWindowResize);
             renderer.dispose();
         };
-    }, []);
+    }, [points]);
 
     return <div ref={mountRef} className="w-full h-1/2"></div>;
 };

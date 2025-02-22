@@ -8,20 +8,38 @@ export async function GET() {
     const request = new Empty();
 
     try {
-        const response = await new Promise((resolve, reject) => {
-            client.getPoint(request, (err, response) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(response);
-                }
-            });
+        // Create a stream to receive points
+        const stream = client.getPointStream(request);
+
+        // Create a ReadableStream to send data to the client
+        const readableStream = new ReadableStream({
+            async start(controller) {
+                // Handle each point received from the server
+                stream.on('data', (point) => {
+                    const data = {
+                        x: point.getX(),
+                        y: point.getY(),
+                        z: point.getZ(),
+                    };
+                    // Enqueue the point data to the ReadableStream
+                    controller.enqueue(new TextEncoder().encode(JSON.stringify(data) + '\n'));
+                });
+
+                // Handle the end of the stream
+                stream.on('end', () => {
+                    controller.close();
+                });
+
+                // Handle errors
+                stream.on('error', (err) => {
+                    controller.error(err);
+                });
+            },
         });
 
-        return Response.json({
-            x: response.getX(),
-            y: response.getY(),
-            z: response.getZ(),
+        // Return the ReadableStream as the response
+        return new Response(readableStream, {
+            headers: { 'Content-Type': 'application/json' },
         });
     } catch (err) {
         return Response.json({ error: err.message }, { status: 500 });

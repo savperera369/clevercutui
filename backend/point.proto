@@ -3,7 +3,7 @@ syntax = "proto3";
 package point_pb2;
 
 service PointService {
-  rpc GetPoint (Empty) returns (Point);
+  rpc GetPointStream (Empty) returns (stream Point);
 }
 
 message Empty {}

@@ -28,10 +28,10 @@ function deserialize_point_pb2_Point(buffer_arg) {
 
 
 var PointServiceService = exports.PointServiceService = {
-  getPoint: {
-    path: '/point_pb2.PointService/GetPoint',
+  getPointStream: {
+    path: '/point_pb2.PointService/GetPointStream',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: point_pb.Empty,
     responseType: point_pb.Point,
     requestSerialize: serialize_point_pb2_Empty,

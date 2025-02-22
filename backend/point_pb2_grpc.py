@@ -34,8 +34,8 @@ class PointServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetPoint = channel.unary_unary(
-                '/point_pb2.PointService/GetPoint',
+        self.GetPointStream = channel.unary_stream(
+                '/point_pb2.PointService/GetPointStream',
                 request_serializer=point__pb2.Empty.SerializeToString,
                 response_deserializer=point__pb2.Point.FromString,
                 _registered_method=True)
@@ -44,7 +44,7 @@ class PointServiceStub(object):
 class PointServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetPoint(self, request, context):
+    def GetPointStream(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -53,8 +53,8 @@ class PointServiceServicer(object):
 
 def add_PointServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetPoint': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetPoint,
+            'GetPointStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetPointStream,
                     request_deserializer=point__pb2.Empty.FromString,
                     response_serializer=point__pb2.Point.SerializeToString,
             ),
@@ -70,7 +70,7 @@ class PointService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetPoint(request,
+    def GetPointStream(request,
             target,
             options=(),
             channel_credentials=None,
@@ -80,10 +80,10 @@ class PointService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(
+        return grpc.experimental.unary_stream(
             request,
             target,
-            '/point_pb2.PointService/GetPoint',
+            '/point_pb2.PointService/GetPointStream',
             point__pb2.Empty.SerializeToString,
             point__pb2.Point.FromString,
             options,
