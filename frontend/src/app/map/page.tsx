@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import ThreeDMesh from "@/components/ThreeDMesh";
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 export type Point = {
@@ -11,36 +11,62 @@ export type Point = {
 
 const MapModePage = () => {
     const [points, setPoints] = useState<THREE.Vector3[]>([]);
+    const [shouldStream, setShouldStream] = useState<boolean>(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    const getPointStreamHandler = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/api/point');
-            const reader = response?.body?.getReader();
-            const decoder = new TextDecoder();
-
-            while (true) {
-                // @ts-ignore
-                const { done, value } = await reader?.read();
-                if (done) break; // Exit the loop when the stream ends
-
-                // Decode the chunk of data
-                const chunk = decoder.decode(value);
-                const point: Point = JSON.parse(chunk); // Parse the JSON object
-
-                const threePoint = new THREE.Vector3(point.x, point.y, point.z);
-                // Update the state with the new point
-                setPoints((prevPoints) => [...prevPoints, threePoint]);
-            }
-        } catch (err) {
-            console.error('Error fetching point stream:', err);
-        }
+    const getPointStreamHandler = () => {
+        setShouldStream(true);
     };
+
+    const stopStreamHandler = () => {
+        setShouldStream(false);
+        abortControllerRef.current?.abort();
+    };
+
+    useEffect(() => {
+        if (!shouldStream) return;
+
+        const fetchPoints = async () => {
+            try {
+                const controller = new AbortController();
+                abortControllerRef.current = controller;
+                const response = await fetch('http://localhost:3000/api/point', {
+                    signal: controller.signal,
+                });
+                const reader = response.body?.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader?.read() || {};
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const point: Point = JSON.parse(chunk);
+                    const threePoint = new THREE.Vector3(point.x, point.y, point.z);
+
+                    setPoints((prevPoints) => [...prevPoints, threePoint]);
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Stream aborted');
+                } else {
+                    console.error('Error fetching point stream:', err);
+                }
+            }
+        };
+
+        fetchPoints();
+
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+    }, [shouldStream]);
 
     return (
         <div className="p-8 min-h-screen flex flex-col items-center gap-y-2 mt-4">
             <h2 className="text-center font-bold text-2xl mb-4">MAP Mode</h2>
             <div className="flex items-start justify-center gap-x-4 w-full mt-4">
-                <div className="flex flex-col items-center border border-black rounded-md bg-gray-100 shadow-md p-4 w-1/2 max-h-1/2">
+                <div className="flex flex-col items-center border border-black rounded-md bg-gray-100 shadow-md p-4 w-3/4 max-h-1/2">
                     <p className="font-semibold text-xl mb-4">
                         3D Mesh Visualization
                     </p>
@@ -48,23 +74,30 @@ const MapModePage = () => {
                         <ThreeDMesh points={points}/>
                     </div>
                 </div>
-                <div className="border border-black rounded-md bg-gray-100 shadow-md p-4 w-1/2 max-h-1/2">
+                <div className="border border-black rounded-md bg-gray-100 shadow-md p-4 w-1/4 max-h-1/2 mb-4 mt-auto mb-auto">
                     <p className="text-center font-semibold text-xl">
                         Manual Point Capture
                     </p>
                     <div className="flex flex-col items-center p-4 gap-y-4 mt-2">
-                        <input className="border-none bg-white p-4 text-sm w-1/2 rounded-md mb-2" type="text" placeholder="Add Coordinates of a Point"/>
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
-                            onClick={getPointStreamHandler}
+                                onClick={getPointStreamHandler}
                         >
                             Get Points
                         </button>
                         <p className="text-sm font-medium mb-4">Get a continuous stream of points from GRPC server.</p>
-                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
-                            Undo
+                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
+                                onClick={stopStreamHandler}
+                        >
+                            Stop
                         </button>
-                        <p className="text-sm font-medium mb-4">Remove the last plotted point.</p>
-                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
+                        <p className="text-sm font-medium mb-4">Stop the stream of points from the server.</p>
+                        {/* <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
+                            Undo
+                        </button> */}
+                        {/* <p className="text-sm font-medium mb-4">Remove the last plotted point.</p> */}
+                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
+                                onClick={() => setPoints([])}
+                        >
                             Reset
                         </button>
                         <p className="text-sm font-medium mb-4">Clear Mesh.</p>

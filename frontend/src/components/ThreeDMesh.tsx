@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { ConvexGeometry } from "three-stdlib";
 
 interface ThreeDMeshProps {
     points: THREE.Vector3[];
@@ -11,7 +12,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-    const pointsMeshRef = useRef<THREE.Points | null>(null);
+    const meshRef = useRef<THREE.Mesh | null>(null);
 
     useEffect(() => {
         const scene = new THREE.Scene();
@@ -21,7 +22,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
             0.1,
             1000
         );
-        camera.position.z = 10;
+        camera.position.z = 30;
         cameraRef.current = camera;
         sceneRef.current = scene;
 
@@ -30,17 +31,18 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         rendererRef.current = renderer;
         mountRef.current?.appendChild(renderer.domElement);
 
-        const material = new THREE.PointsMaterial({
-            color: 'white',
-            size: 0.1,
-            opacity: 0.7,
+        const material = new THREE.MeshPhongMaterial({
+            color: 'skyblue',
+            opacity: 0.6,
             transparent: true,
+            side: THREE.DoubleSide,
+            wireframe: false,
         });
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const pointsMesh = new THREE.Points(geometry, material);
-        scene.add(pointsMesh);
-        pointsMeshRef.current = pointsMesh;
+        const geometry = new ConvexGeometry(points);
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        meshRef.current = mesh;
 
         const light = new THREE.AmbientLight(0x404040, 2);
         scene.add(light);
@@ -51,8 +53,8 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
         const animate = () => {
             requestAnimationFrame(animate);
-            pointsMesh.rotation.x += 0.01;
-            pointsMesh.rotation.y += 0.01;
+            // mesh.rotation.x += 0.01;
+            // mesh.rotation.y += 0.01;
             renderer.render(scene, camera);
         };
 
@@ -80,10 +82,10 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     }, []);
 
     useEffect(() => {
-        if (pointsMeshRef.current) {
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            pointsMeshRef.current.geometry.dispose();
-            pointsMeshRef.current.geometry = geometry;
+        if (meshRef.current) {
+            const newGeometry = new ConvexGeometry(points);
+            meshRef.current.geometry.dispose();
+            meshRef.current.geometry = newGeometry;
         }
     }, [points]);
 
@@ -91,6 +93,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 };
 
 export default ThreeDMesh;
+
 
 
 
