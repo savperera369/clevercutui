@@ -18,7 +18,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(
             75,
-            window.innerWidth / window.innerHeight,
+            mountRef.current!.clientWidth / mountRef.current!.clientHeight,
             0.1,
             1000
         );
@@ -27,7 +27,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         sceneRef.current = scene;
 
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(mountRef.current!.clientWidth, mountRef.current!.clientHeight);
         rendererRef.current = renderer;
         mountRef.current?.appendChild(renderer.domElement);
 
@@ -53,8 +53,6 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
         const animate = () => {
             requestAnimationFrame(animate);
-            // mesh.rotation.x += 0.01;
-            // mesh.rotation.y += 0.01;
             renderer.render(scene, camera);
         };
 
@@ -89,7 +87,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         }
     }, [points]);
 
-    return <div ref={mountRef} className="w-full h-1/2"></div>;
+    return <div ref={mountRef} className="w-full h-[500px]"></div>;
 };
 
 export default ThreeDMesh;
