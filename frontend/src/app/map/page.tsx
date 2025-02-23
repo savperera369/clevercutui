@@ -2,6 +2,7 @@
 import ThreeDMesh from "@/components/ThreeDMesh";
 import { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useRouter } from "next/navigation";
 
 export type Point = {
     x: number;
@@ -10,6 +11,7 @@ export type Point = {
 }
 
 const MapModePage = () => {
+    const router = useRouter();
     const [points, setPoints] = useState<THREE.Vector3[]>([]);
     const [shouldStream, setShouldStream] = useState<boolean>(false);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -24,7 +26,28 @@ const MapModePage = () => {
     };
 
     useEffect(() => {
+        const getInitialMeshIfItExists = async () => {
+            try {
+                const res = await fetch("http://localhost:3000/api/mesh", {
+                    cache: "no-store"
+                });
+
+                const { mesh } = await res.json();
+                if (mesh) {
+                    setPoints(mesh?.points?.map((point: Point) => new THREE.Vector3(point.x, point.y, point.z)));
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        getInitialMeshIfItExists();
+    }, []);
+
+    useEffect(() => {
         if (!shouldStream) return;
+
+        setPoints([]);
 
         const fetchPoints = async () => {
             try {
@@ -62,6 +85,43 @@ const MapModePage = () => {
         };
     }, [shouldStream]);
 
+    const saveMeshHandler = async () => {
+        try {
+            if (!points || points.length === 0) {
+                console.log("No points to save");
+                return;
+            }
+
+            const meshPoints = points?.map((point) => ({
+                x: point.x,
+                y: point.y,
+                z: point.z,
+            }));
+
+            const newMesh = {
+                name: "mesh",
+                points: meshPoints,
+            };
+
+            const res = await fetch("http://localhost:3000/api/mesh", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newMesh),
+            });
+
+            if (!res.ok) {
+                console.log("Failed to create mesh");
+            }
+
+            router.push('/trim');
+        } catch (error) {
+            console.error(error);
+            throw new Error("Failed to save mesh.");
+        }
+    }
+
     return (
         <div className="p-8 min-h-screen flex flex-col items-center gap-y-2 mt-4">
             <h2 className="text-center font-bold text-2xl mb-4">MAP Mode</h2>
@@ -91,6 +151,12 @@ const MapModePage = () => {
                             Stop
                         </button>
                         <p className="text-sm font-medium mb-4">Stop the stream of points from the server.</p>
+                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
+                                onClick={saveMeshHandler}
+                        >
+                            Save
+                        </button>
+                        <p className="text-sm font-medium mb-4">Save the generated mesh.</p>
                         {/* <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
                             Undo
                         </button> */}

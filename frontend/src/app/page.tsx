@@ -1,7 +1,7 @@
 import ExpandButton from "@/components/ExpandButton";
 
 const mapModeDescription = "This is the core screen for manual point capture and mesh generation.";
-const trimModeDescription = "This is Trim Mode";
+const trimModeDescription = "This page will display the latest saved mesh.";
 
 export default function Home() {
   return (
