@@ -8,7 +8,6 @@ from grpc_reflection.v1alpha import reflection
 
 class PointService(point_pb2_grpc.PointServiceServicer):
     def GetPointStream(self, request, context):
-        # Stream points indefinitely (or until the client disconnects)
         while True:
             x_random = random.uniform(-10, 10)
             y_random = random.uniform(-10, 10)
