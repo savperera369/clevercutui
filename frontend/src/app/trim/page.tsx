@@ -27,15 +27,19 @@ const TrimModePage = () => {
     }, []);
 
     return (
-        <div className="px-4 py-4 min-h-screen flex justify-center">
+        <div className="px-4 py-4 min-h-screen flex flex-col justify-center gap-y-4 mb-4">
+            <p className="text-2xl font-bold text-center">
+                Trim Mode
+            </p>
             <div className="p-4 bg-gray-100 rounded-md w-full shadow-md flex flex-col gap-y-4">
-                <p className="text-2xl font-bold text-center">
-                    Trim Mode
-                </p>
                 <div className="w-3/4 mx-auto p-4 h-full flex items-center">
                     <ThreeDMesh points={points} />
                 </div>
             </div>
+            <p className="text-md font-medium text-center">
+                Pictured above is the latest saved mesh. Every time you generate a new mesh in MAP
+                Mode and save it, that is what will be rendered on this page.
+            </p>
         </div>
     );
 }
