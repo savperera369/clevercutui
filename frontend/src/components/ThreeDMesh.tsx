@@ -16,6 +16,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
     useEffect(() => {
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);
         const camera = new THREE.PerspectiveCamera(
             75,
             mountRef.current!.clientWidth / mountRef.current!.clientHeight,
@@ -87,7 +88,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         }
     }, [points]);
 
-    return <div ref={mountRef} className="w-full h-[500px]"></div>;
+    return <div ref={mountRef} className="w-full h-[500px] rounded-md shadow-lg"></div>;
 };
 
 export default ThreeDMesh;
