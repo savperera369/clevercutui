@@ -1,30 +1,37 @@
 "use client"
 import ThreeDMesh from "@/components/ThreeDMesh";
-import { useState, useEffect } from "react";
 import { Point } from "../map/page";
 import * as THREE from 'three';
+import { useQuery } from "@tanstack/react-query";
 
 const TrimModePage = () => {
-    const [points, setPoints] = useState<THREE.Vector3[]>([]);
+    const getInitialMeshIfItExists = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/api/mesh", {
+                cache: "no-store"
+            });
 
-    useEffect(() => {
-        const getInitialMeshIfItExists = async () => {
-            try {
-                const res = await fetch("http://localhost:3000/api/mesh", {
-                    cache: "no-store"
-                });
-
-                const { mesh } = await res.json();
-                if (mesh) {
-                    setPoints(mesh?.points?.map((point: Point) => new THREE.Vector3(point.x, point.y, point.z)));
-                }
-            } catch (error) {
-                console.log(error);
-            }
+            const { mesh } = await res.json();
+            return mesh;
+        } catch (error) {
+            console.log(error);
         }
+    }
 
-        getInitialMeshIfItExists();
-    }, []);
+    const { isLoading, isError, error, data } = useQuery({
+        queryKey: ["getLatestMesh"],
+        queryFn: getInitialMeshIfItExists
+    });
+
+    if (isLoading) {
+        return <span>Loading Latest Mesh...</span>;
+    }
+
+    if (isError) {
+        return <span>Error: {error.message}</span>
+    }
+
+    const points: THREE.Vector3[] = data?.points?.map((point: Point) => new THREE.Vector3(point.x, point.y, point.z));
 
     return (
         <div className="px-4 py-4 min-h-screen flex flex-col justify-center gap-y-4 mb-4">

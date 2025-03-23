@@ -1,8 +1,9 @@
 "use client";
 import ThreeDMesh from "@/components/ThreeDMesh";
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import * as THREE from 'three';
 import { useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type Point = {
     x: number;
@@ -12,78 +13,71 @@ export type Point = {
 
 const MapModePage = () => {
     const router = useRouter();
-    const [points, setPoints] = useState<THREE.Vector3[]>([]);
-    const [shouldStream, setShouldStream] = useState<boolean>(false);
+    const queryClient = useQueryClient();
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const getPointStreamHandler = () => {
-        setShouldStream(true);
-    };
-
     const stopStreamHandler = () => {
-        setShouldStream(false);
         abortControllerRef.current?.abort();
     };
 
-    useEffect(() => {
-        const getInitialMeshIfItExists = async () => {
-            try {
-                const res = await fetch("http://localhost:3000/api/mesh", {
-                    cache: "no-store"
-                });
+    const getInitialMeshIfItExists = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/api/mesh", {
+                cache: "no-store"
+            });
 
-                const { mesh } = await res.json();
-                if (mesh) {
-                    setPoints(mesh?.points?.map((point: Point) => new THREE.Vector3(point.x, point.y, point.z)));
-                }
-            } catch (error) {
-                console.log(error);
+            const { mesh } = await res.json();
+            if (mesh) {
+                return mesh.points.map((point: Point) =>
+                    new THREE.Vector3(point.x, point.y, point.z)
+                );
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const {  data: points = [], isLoading, isError, error } = useQuery({
+        queryKey: ["streamPoints"],
+        queryFn: getInitialMeshIfItExists
+    });
+
+    const fetchPoints = async () => {
+        try {
+            const controller = new AbortController();
+            abortControllerRef.current = controller;
+            const response = await fetch('http://localhost:3000/api/point', {
+                signal: controller.signal,
+            });
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader?.read() || {};
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const point: Point = JSON.parse(chunk);
+                const threePoint = new THREE.Vector3(point.x, point.y, point.z);
+
+                queryClient.setQueryData<THREE.Vector3[]>(['streamPoints'], (prevPoints = []) => {
+                    return [...prevPoints, threePoint];
+                });
+            }
+        } catch (err: any) {
+            if (err.name === 'AbortError') {
+                console.log('Stream aborted');
+            } else {
+                console.error('Error fetching point stream:', err);
             }
         }
+    };
 
-        getInitialMeshIfItExists();
-    }, []);
-
-    useEffect(() => {
-        if (!shouldStream) return;
-
-        setPoints([]);
-
-        const fetchPoints = async () => {
-            try {
-                const controller = new AbortController();
-                abortControllerRef.current = controller;
-                const response = await fetch('http://localhost:3000/api/point', {
-                    signal: controller.signal,
-                });
-                const reader = response.body?.getReader();
-                const decoder = new TextDecoder();
-
-                while (true) {
-                    const { done, value } = await reader?.read() || {};
-                    if (done) break;
-
-                    const chunk = decoder.decode(value);
-                    const point: Point = JSON.parse(chunk);
-                    const threePoint = new THREE.Vector3(point.x, point.y, point.z);
-
-                    setPoints((prevPoints) => [...prevPoints, threePoint]);
-                }
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    console.log('Stream aborted');
-                } else {
-                    console.error('Error fetching point stream:', err);
-                }
-            }
-        };
-
-        fetchPoints();
-
-        return () => {
-            abortControllerRef.current?.abort();
-        };
-    }, [shouldStream]);
+    const { mutate: startStream } = useMutation({
+        mutationFn: fetchPoints,
+    });
 
     const saveMeshHandler = async () => {
         try {
@@ -92,7 +86,7 @@ const MapModePage = () => {
                 return;
             }
 
-            const meshPoints = points?.map((point) => ({
+            const meshPoints = points?.map((point: Point) => ({
                 x: point.x,
                 y: point.y,
                 z: point.z,
@@ -114,12 +108,34 @@ const MapModePage = () => {
             if (!res.ok) {
                 console.log("Failed to create mesh");
             }
-
-            router.push('/trim');
         } catch (error) {
             console.error(error);
             throw new Error("Failed to save mesh.");
         }
+    }
+
+    const { mutate: saveMesh, isPending: isSaving } = useMutation({
+        mutationFn: saveMeshHandler,
+        onSuccess: async () => {
+            console.log("Mesh saved successfully");
+            await queryClient.invalidateQueries({ queryKey: ["streamPoints"] });
+            router.push('/trim');
+        },
+        onError: (error) => {
+            console.error("Error saving mesh:", error);
+        },
+    })
+
+    const resetPoints = () => {
+        queryClient.setQueryData(['streamPoints'], []);
+    };
+
+    if (isLoading) {
+        return <span>Loading....</span>;
+    }
+
+    if (isError) {
+        return <span>Error: {error.message}</span>;
     }
 
     return (
@@ -140,7 +156,7 @@ const MapModePage = () => {
                     </p>
                     <div className="flex flex-col items-center p-4 gap-y-4 mt-2">
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
-                                onClick={getPointStreamHandler}
+                                onClick={() => startStream()}
                         >
                             Get Points
                         </button>
@@ -152,17 +168,13 @@ const MapModePage = () => {
                         </button>
                         <p className="text-sm font-medium mb-4">Stop the stream of points from the server.</p>
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
-                                onClick={saveMeshHandler}
+                                onClick={() => saveMesh()}
                         >
-                            Save
+                            { isSaving ? "Saving..." : "Save" }
                         </button>
                         <p className="text-sm font-medium mb-4">Save the generated mesh.</p>
-                        {/* <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900">
-                            Undo
-                        </button> */}
-                        {/* <p className="text-sm font-medium mb-4">Remove the last plotted point.</p> */}
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-gray-500 text-white transition-all hover:bg-gray-900"
-                                onClick={() => setPoints([])}
+                                onClick={resetPoints}
                         >
                             Reset
                         </button>
