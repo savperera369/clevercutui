@@ -34,7 +34,7 @@ const TrimModePage = () => {
     const points: THREE.Vector3[] = data?.points?.map((point: Point) => new THREE.Vector3(point.x, point.y, point.z));
 
     return (
-        <div className="min-h-screen flex flex-col justify-center gap-y-4 mb-4 bg-gray-900 p-4">
+        <div className="min-h-screen flex flex-col justify-center gap-y-4 mb-4 bg-black p-4">
             <div className="w-3/4 mx-auto p-4 h-full flex items-center rounded-md shadow-lg">
                 <ThreeDMesh points={points} />
             </div>
