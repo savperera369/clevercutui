@@ -13,6 +13,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const meshRef = useRef<THREE.Mesh | null>(null);
+    const latestPointRef = useRef<THREE.Mesh | null>(null);
 
     useEffect(() => {
         const scene = new THREE.Scene();
@@ -40,10 +41,12 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
             wireframe: false,
         });
 
-        const geometry = new ConvexGeometry(points);
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-        meshRef.current = mesh;
+        if (points.length > 0) {
+            const geometry = new ConvexGeometry(points);
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            meshRef.current = mesh;
+        }
 
         const light = new THREE.AmbientLight(0x404040, 2);
         scene.add(light);
@@ -81,10 +84,24 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     }, []);
 
     useEffect(() => {
-        if (meshRef.current) {
+        if (meshRef.current && points.length > 0) {
             const newGeometry = new ConvexGeometry(points);
             meshRef.current.geometry.dispose();
             meshRef.current.geometry = newGeometry;
+        }
+
+        if (sceneRef.current && points.length > 0) {
+            if (latestPointRef.current) {
+                sceneRef.current.remove(latestPointRef.current);
+            }
+
+            const latestPoint = points[points.length - 1];
+            const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 'red' });
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.position.set(latestPoint.x, latestPoint.y, latestPoint.z);
+            sceneRef.current.add(sphere);
+            latestPointRef.current = sphere;
         }
     }, [points]);
 

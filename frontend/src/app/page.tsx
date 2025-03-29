@@ -11,7 +11,7 @@ export default function Home() {
             <div className="w-1/2 flex items-center justify-center h-full">
                 <ExpandButton buttonTitle="MAP Mode" content={mapModeDescription} href={"/map"}/>
             </div>
-            <div className="w-[1px] border border-white h-[100vh]"></div>
+            <div className="w-[1px] border border-white h-screen mt-2"></div>
             <div className="w-1/2 flex items-center justify-center h-full">
                 <ExpandButton buttonTitle="Trim Mode" content={trimModeDescription} href={"/trim"}/>
             </div>

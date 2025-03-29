@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LoadingData from "@/components/LoadingData";
 
 export type Point = {
     x: number;
@@ -46,6 +47,7 @@ const MapModePage = () => {
 
     const fetchPoints = async () => {
         try {
+            queryClient.setQueryData(['streamPoints'], []);
             const controller = new AbortController();
             abortControllerRef.current = controller;
             const response = await fetch('http://localhost:3000/api/point', {
@@ -131,7 +133,7 @@ const MapModePage = () => {
     };
 
     if (isLoading) {
-        return <span>Loading....</span>;
+        return <LoadingData />;
     }
 
     if (isError) {

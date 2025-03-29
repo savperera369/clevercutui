@@ -3,6 +3,7 @@ import ThreeDMesh from "@/components/ThreeDMesh";
 import { Point } from "../map/page";
 import * as THREE from 'three';
 import { useQuery } from "@tanstack/react-query";
+import LoadingData from "@/components/LoadingData";
 
 const TrimModePage = () => {
     const getInitialMeshIfItExists = async () => {
@@ -24,7 +25,7 @@ const TrimModePage = () => {
     });
 
     if (isLoading) {
-        return <span>Loading Latest Mesh...</span>;
+        return <LoadingData />;
     }
 
     if (isError) {
