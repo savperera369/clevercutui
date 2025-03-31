@@ -15,6 +15,16 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     const meshRef = useRef<THREE.Mesh | null>(null);
     const latestPointRef = useRef<THREE.Mesh | null>(null);
 
+    const getColorForRegion = (point: THREE.Vector3) => {
+        if (point.z < -5) {
+            return new THREE.Color(0xff0000); // Red
+        } else if (point.z >= -5 && point.z < 5) {
+            return new THREE.Color(0xffff00); // Yellow
+        } else {
+            return new THREE.Color(0x00ff00); // Green
+        }
+    };
+
     useEffect(() => {
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
@@ -34,7 +44,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
         mountRef.current?.appendChild(renderer.domElement);
 
         const material = new THREE.MeshPhongMaterial({
-            color: 'skyblue',
+            vertexColors: true,
             opacity: 0.6,
             transparent: true,
             side: THREE.DoubleSide,
@@ -43,6 +53,16 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
         if (points.length > 0) {
             const geometry = new ConvexGeometry(points);
+
+            // Apply colors to each vertex based on position
+            const colors: number[] = [];
+            for (let i = 0; i < geometry.attributes.position.count; i++) {
+                const vertex = new THREE.Vector3().fromBufferAttribute(geometry.attributes.position, i);
+                const color = getColorForRegion(vertex);
+                colors.push(color.r, color.g, color.b); // Push RGB components of color
+            }
+            geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
             const mesh = new THREE.Mesh(geometry, material);
             scene.add(mesh);
             meshRef.current = mesh;
@@ -86,6 +106,16 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
     useEffect(() => {
         if (meshRef.current && points.length > 0) {
             const newGeometry = new ConvexGeometry(points);
+
+            // Apply colors to each vertex based on position again if points change
+            const colors: number[] = [];
+            for (let i = 0; i < newGeometry.attributes.position.count; i++) {
+                const vertex = new THREE.Vector3().fromBufferAttribute(newGeometry.attributes.position, i);
+                const color = getColorForRegion(vertex);
+                colors.push(color.r, color.g, color.b);
+            }
+            newGeometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
             meshRef.current.geometry.dispose();
             meshRef.current.geometry = newGeometry;
         }
@@ -97,7 +127,9 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 
             const latestPoint = points[points.length - 1];
             const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 'red' });
+            const sphereMaterial = new THREE.MeshBasicMaterial({
+                color: getColorForRegion(latestPoint), // Use the color based on region
+            });
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphere.position.set(latestPoint.x, latestPoint.y, latestPoint.z);
             sceneRef.current.add(sphere);
@@ -109,6 +141,7 @@ const ThreeDMesh = ({ points }: ThreeDMeshProps) => {
 };
 
 export default ThreeDMesh;
+
 
 
 
