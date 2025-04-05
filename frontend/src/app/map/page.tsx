@@ -132,6 +132,23 @@ const MapModePage = () => {
         queryClient.setQueryData(['streamPoints'], []);
     };
 
+    const getGuardLength = () => {
+        if (!points || points.length === 0) {
+            return 1;
+        }
+
+        const lastPoint = points[points.length - 1];
+        const z = lastPoint.z;
+
+        if (z < -5) {
+            return 1;
+        } else if (z >= -5 && z <= 5) {
+            return 2;
+        } else {
+            return 3
+        }
+    };
+
     if (isLoading) {
         return <LoadingData />;
     }
@@ -172,6 +189,9 @@ const MapModePage = () => {
                             Reset
                         </button>
                     </div>
+                </div>
+                <div className="border border-white rounded-md shadow-lg p-4 text-white">
+                    <span className="font-semibold">Guard Length: {getGuardLength()}</span>
                 </div>
             </div>
         </div>
