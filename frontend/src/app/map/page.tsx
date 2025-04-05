@@ -1,6 +1,6 @@
 "use client";
 import ThreeDMesh from "@/components/ThreeDMesh";
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,12 +10,16 @@ export type Point = {
     x: number;
     y: number;
     z: number;
+    roll: number;
+    pitch: number;
+    yaw: number;
 }
 
 const MapModePage = () => {
     const router = useRouter();
     const queryClient = useQueryClient();
     const abortControllerRef = useRef<AbortController | null>(null);
+    const [rpy, setRpy] = useState(new THREE.Vector3(0, 0, 0));
 
     const stopStreamHandler = () => {
         abortControllerRef.current?.abort();
@@ -63,6 +67,7 @@ const MapModePage = () => {
                 const chunk = decoder.decode(value);
                 const point: Point = JSON.parse(chunk);
                 const threePoint = new THREE.Vector3(point.x, point.y, point.z);
+                setRpy(new THREE.Vector3(point.roll, point.pitch, point.yaw));
 
                 queryClient.setQueryData<THREE.Vector3[]>(['streamPoints'], (prevPoints = []) => {
                     return [...prevPoints, threePoint];
@@ -161,7 +166,7 @@ const MapModePage = () => {
         <div className="p-4 min-h-screen flex flex-col items-center gap-y-2 bg-black">
             <div className="flex flex-col items-center gap-y-4 w-full mt-4">
                 <div className="w-3/4 max-h-1/2 rounded-md h-full">
-                    <ThreeDMesh points={points}/>
+                    <ThreeDMesh points={points} roll_pitch_yaw={rpy}/>
                 </div>
                 <div className="border border-white rounded-md shadow-lg p-4 w-3/4 max-h-1/2">
                     <p className="text-center font-semibold text-xl text-white">

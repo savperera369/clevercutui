@@ -12,7 +12,10 @@ class PointService(point_pb2_grpc.PointServiceServicer):
             x_random = random.uniform(-10, 10)
             y_random = random.uniform(-10, 10)
             z_random = random.uniform(-10, 10)
-            point = point_pb2.Point(x=x_random, y=y_random, z=z_random)
+            roll_random  = random.uniform(0, 360)
+            pitch_random = random.uniform(0, 360)
+            yaw_random = random.uniform(0, 360)
+            point = point_pb2.Point(x=x_random, y=y_random, z=z_random, roll=roll_random, pitch=pitch_random, yaw=yaw_random)
             yield point
             time.sleep(1) 
 

@@ -200,7 +200,10 @@ proto.point_pb2.Point.toObject = function(includeInstance, msg) {
   var f, obj = {
     x: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
     y: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
-    z: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0)
+    z: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
+    roll: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0),
+    pitch: jspb.Message.getFloatingPointFieldWithDefault(msg, 5, 0.0),
+    yaw: jspb.Message.getFloatingPointFieldWithDefault(msg, 6, 0.0)
   };
 
   if (includeInstance) {
@@ -249,6 +252,18 @@ proto.point_pb2.Point.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {number} */ (reader.readFloat());
       msg.setZ(value);
       break;
+    case 4:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setRoll(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setPitch(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setYaw(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -296,6 +311,27 @@ proto.point_pb2.Point.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeFloat(
       3,
+      f
+    );
+  }
+  f = message.getRoll();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      4,
+      f
+    );
+  }
+  f = message.getPitch();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      5,
+      f
+    );
+  }
+  f = message.getYaw();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      6,
       f
     );
   }
@@ -353,6 +389,60 @@ proto.point_pb2.Point.prototype.getZ = function() {
  */
 proto.point_pb2.Point.prototype.setZ = function(value) {
   return jspb.Message.setProto3FloatField(this, 3, value);
+};
+
+
+/**
+ * optional float roll = 4;
+ * @return {number}
+ */
+proto.point_pb2.Point.prototype.getRoll = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 4, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.point_pb2.Point} returns this
+ */
+proto.point_pb2.Point.prototype.setRoll = function(value) {
+  return jspb.Message.setProto3FloatField(this, 4, value);
+};
+
+
+/**
+ * optional float pitch = 5;
+ * @return {number}
+ */
+proto.point_pb2.Point.prototype.getPitch = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 5, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.point_pb2.Point} returns this
+ */
+proto.point_pb2.Point.prototype.setPitch = function(value) {
+  return jspb.Message.setProto3FloatField(this, 5, value);
+};
+
+
+/**
+ * optional float yaw = 6;
+ * @return {number}
+ */
+proto.point_pb2.Point.prototype.getYaw = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 6, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.point_pb2.Point} returns this
+ */
+proto.point_pb2.Point.prototype.setYaw = function(value) {
+  return jspb.Message.setProto3FloatField(this, 6, value);
 };
 
 
