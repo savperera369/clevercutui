@@ -6,9 +6,10 @@ import { ConvexGeometry } from "three-stdlib";
 interface ThreeDMeshProps {
     points: THREE.Vector3[];
     roll_pitch_yaw?: THREE.Vector3;
+    isTrim?: boolean;
 }
 
-const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
+const ThreeDMesh = ({ points, roll_pitch_yaw, isTrim }: ThreeDMeshProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
@@ -56,14 +57,14 @@ const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
 
         if (points.length > 0) {
             const geometry = new ConvexGeometry(points);
-
-            // Apply colors to each vertex based on position
             const colors: number[] = [];
+
             for (let i = 0; i < geometry.attributes.position.count; i++) {
                 const vertex = new THREE.Vector3().fromBufferAttribute(geometry.attributes.position, i);
                 const color = getColorForRegion(vertex);
-                colors.push(color.r, color.g, color.b); // Push RGB components of color
+                colors.push(color.r, color.g, color.b);
             }
+
             geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
             const mesh = new THREE.Mesh(geometry, material);
@@ -107,40 +108,33 @@ const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
     }, []);
 
     useEffect(() => {
-        if (meshRef.current && points.length > 0) {
+        if (!isTrim && meshRef.current && points.length > 0) {
             const newGeometry = new ConvexGeometry(points);
-
-            // Apply colors to each vertex based on position again if points change
             const colors: number[] = [];
+
             for (let i = 0; i < newGeometry.attributes.position.count; i++) {
                 const vertex = new THREE.Vector3().fromBufferAttribute(newGeometry.attributes.position, i);
                 const color = getColorForRegion(vertex);
                 colors.push(color.r, color.g, color.b);
             }
+
             newGeometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
-            meshRef.current.geometry.dispose();
+            meshRef.current.geometry.dispose(); // clean up old geometry
             meshRef.current.geometry = newGeometry;
         }
 
+        // Always show latest point + rectangle, even in TRIM mode
         if (sceneRef.current && points.length > 0) {
-            if (latestPointRef.current) {
-                sceneRef.current.remove(latestPointRef.current);
-            }
-
             const latestPoint = points[points.length - 1];
             const r_p_y = roll_pitch_yaw || new THREE.Vector3(0, 0, 0);
 
             const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
             const sphereMaterial = new THREE.MeshBasicMaterial({
-                color: getColorForRegion(latestPoint), // Use color based on region
+                color: getColorForRegion(latestPoint),
             });
 
-            const rectangleWidth = 3;
-            const rectangleHeight = 1;
-            const rectangleDepth = 2;
-
-            const rectangleGeometry = new THREE.BoxGeometry(rectangleWidth, rectangleHeight, rectangleDepth);
+            const rectangleGeometry = new THREE.BoxGeometry(3, 1, 2);
             const rectangleMaterial = new THREE.MeshBasicMaterial({
                 color: 0x000,
                 wireframe: true,
@@ -149,8 +143,8 @@ const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             const rectangle = new THREE.Mesh(rectangleGeometry, rectangleMaterial);
 
-            sphere.position.set(latestPoint.x, latestPoint.y, latestPoint.z);
-            rectangle.position.set(latestPoint.x, latestPoint.y, latestPoint.z);
+            sphere.position.copy(latestPoint);
+            rectangle.position.copy(latestPoint);
 
             const roll = THREE.MathUtils.degToRad(r_p_y.x);
             const pitch = THREE.MathUtils.degToRad(r_p_y.y);
@@ -159,20 +153,17 @@ const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
             sphere.rotation.set(roll, pitch, yaw);
             rectangle.rotation.set(roll, pitch, yaw);
 
-            if (sphereRef.current) {
-                sceneRef.current.remove(sphereRef.current);
-            }
-            if (rectangleRef.current) {
-                sceneRef.current.remove(rectangleRef.current);
-            }
+            // Replace the previous visual marker
+            if (sphereRef.current) sceneRef.current.remove(sphereRef.current);
+            if (rectangleRef.current) sceneRef.current.remove(rectangleRef.current);
 
-            sceneRef.current.add(rectangle);
             sceneRef.current.add(sphere);
+            sceneRef.current.add(rectangle);
 
             sphereRef.current = sphere;
             rectangleRef.current = rectangle;
         }
-    }, [points]);
+    }, [points, isTrim]);
 
     return <div ref={mountRef} className="w-full h-[500px] rounded-md shadow-lg"></div>;
 };
