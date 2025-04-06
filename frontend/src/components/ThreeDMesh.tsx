@@ -19,9 +19,9 @@ const ThreeDMesh = ({ points, roll_pitch_yaw }: ThreeDMeshProps) => {
     const rectangleRef = useRef<THREE.Mesh | null>(null);
 
     const getColorForRegion = (point: THREE.Vector3) => {
-        if (point.z < -5) {
+        if (point.y < -5) {
             return new THREE.Color(0xff0000); // Red
-        } else if (point.z >= -5 && point.z < 5) {
+        } else if (point.y >= -5 && point.y < 5) {
             return new THREE.Color(0xffff00); // Yellow
         } else {
             return new THREE.Color(0x00ff00); // Green

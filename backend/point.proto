@@ -6,6 +6,10 @@ service PointService {
   rpc GetPointStream (Empty) returns (stream Point);
 }
 
+service BluetoothService {
+  rpc Connect (BluetoothRequest) returns (BluetoothResponse);
+}
+
 message Empty {}
 
 message Point {
@@ -15,4 +19,12 @@ message Point {
   float roll = 4;
   float pitch = 5;
   float yaw = 6;
+}
+
+message BluetoothRequest {
+  string uart_string = 1;
+}
+
+message BluetoothResponse {
+  string status = 1;
 }

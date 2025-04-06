@@ -4,6 +4,28 @@
 var grpc = require('@grpc/grpc-js');
 var point_pb = require('./point_pb.js');
 
+function serialize_point_pb2_BluetoothRequest(arg) {
+  if (!(arg instanceof point_pb.BluetoothRequest)) {
+    throw new Error('Expected argument of type point_pb2.BluetoothRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_point_pb2_BluetoothRequest(buffer_arg) {
+  return point_pb.BluetoothRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_point_pb2_BluetoothResponse(arg) {
+  if (!(arg instanceof point_pb.BluetoothResponse)) {
+    throw new Error('Expected argument of type point_pb2.BluetoothResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_point_pb2_BluetoothResponse(buffer_arg) {
+  return point_pb.BluetoothResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_point_pb2_Empty(arg) {
   if (!(arg instanceof point_pb.Empty)) {
     throw new Error('Expected argument of type point_pb2.Empty');
@@ -42,3 +64,18 @@ var PointServiceService = exports.PointServiceService = {
 };
 
 exports.PointServiceClient = grpc.makeGenericClientConstructor(PointServiceService, 'PointService');
+var BluetoothServiceService = exports.BluetoothServiceService = {
+  connect: {
+    path: '/point_pb2.BluetoothService/Connect',
+    requestStream: false,
+    responseStream: false,
+    requestType: point_pb.BluetoothRequest,
+    responseType: point_pb.BluetoothResponse,
+    requestSerialize: serialize_point_pb2_BluetoothRequest,
+    requestDeserialize: deserialize_point_pb2_BluetoothRequest,
+    responseSerialize: serialize_point_pb2_BluetoothResponse,
+    responseDeserialize: deserialize_point_pb2_BluetoothResponse,
+  },
+};
+
+exports.BluetoothServiceClient = grpc.makeGenericClientConstructor(BluetoothServiceService, 'BluetoothService');

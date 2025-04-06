@@ -21,6 +21,16 @@ const MapModePage = () => {
     const abortControllerRef = useRef<AbortController | null>(null);
     const [rpy, setRpy] = useState(new THREE.Vector3(0, 0, 0));
 
+    const handleConnect = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/api/bluetooth", {
+                cache: "no-cache",
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const stopStreamHandler = () => {
         abortControllerRef.current?.abort();
     };
@@ -143,11 +153,11 @@ const MapModePage = () => {
         }
 
         const lastPoint = points[points.length - 1];
-        const z = lastPoint.z;
+        const y = lastPoint.y;
 
-        if (z < -5) {
+        if (y < -5) {
             return 1;
-        } else if (z >= -5 && z <= 5) {
+        } else if (y >= -5 && y <= 5) {
             return 2;
         } else {
             return 3
@@ -192,6 +202,11 @@ const MapModePage = () => {
                                 onClick={resetPoints}
                         >
                             Reset
+                        </button>
+                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-white transition-all hover:bg-gray-200"
+                                onClick={handleConnect}
+                        >
+                            Connect to ESP32
                         </button>
                     </div>
                 </div>
