@@ -95,3 +95,75 @@ class PointService(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class BluetoothServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.Connect = channel.unary_unary(
+                '/point_pb2.BluetoothService/Connect',
+                request_serializer=point__pb2.BluetoothRequest.SerializeToString,
+                response_deserializer=point__pb2.BluetoothResponse.FromString,
+                _registered_method=True)
+
+
+class BluetoothServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def Connect(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_BluetoothServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'Connect': grpc.unary_unary_rpc_method_handler(
+                    servicer.Connect,
+                    request_deserializer=point__pb2.BluetoothRequest.FromString,
+                    response_serializer=point__pb2.BluetoothResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'point_pb2.BluetoothService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('point_pb2.BluetoothService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class BluetoothService(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def Connect(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/point_pb2.BluetoothService/Connect',
+            point__pb2.BluetoothRequest.SerializeToString,
+            point__pb2.BluetoothResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

@@ -21,6 +21,16 @@ const MapModePage = () => {
     const abortControllerRef = useRef<AbortController | null>(null);
     const [rpy, setRpy] = useState(new THREE.Vector3(0, 0, 0));
 
+    const handleConnect = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/api/bluetooth", {
+                cache: "no-cache",
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const stopStreamHandler = () => {
         abortControllerRef.current?.abort();
     };
@@ -137,23 +147,6 @@ const MapModePage = () => {
         queryClient.setQueryData(['streamPoints'], []);
     };
 
-    const getGuardLength = () => {
-        if (!points || points.length === 0) {
-            return 1;
-        }
-
-        const lastPoint = points[points.length - 1];
-        const z = lastPoint.z;
-
-        if (z < -5) {
-            return 1;
-        } else if (z >= -5 && z <= 5) {
-            return 2;
-        } else {
-            return 3
-        }
-    };
-
     if (isLoading) {
         return <LoadingData />;
     }
@@ -164,13 +157,13 @@ const MapModePage = () => {
 
     return (
         <div className="p-4 min-h-screen flex flex-col items-center gap-y-2 bg-black">
-            <div className="flex flex-col items-center gap-y-4 w-full mt-4">
+            <div className="flex flex-col flex-1 items-center justify-between w-full mt-4">
                 <div className="w-3/4 max-h-1/2 rounded-md h-full">
                     <ThreeDMesh points={points} roll_pitch_yaw={rpy}/>
                 </div>
                 <div className="border border-white rounded-md shadow-lg p-4 w-3/4 max-h-1/2">
-                    <p className="text-center font-semibold text-xl text-white">
-                        Manual Point Capture
+                    <p className="text-center font-semibold text-4xl text-white">
+                        MAP Mode
                     </p>
                     <div className="flex items-center justify-center p-4 gap-x-4 mt-2">
                         <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-white transition-all hover:bg-gray-200"
@@ -193,10 +186,12 @@ const MapModePage = () => {
                         >
                             Reset
                         </button>
+                        <button className="w-1/2 px-4 py-4 rounded-lg text-md font-medium bg-white transition-all hover:bg-gray-200"
+                                onClick={handleConnect}
+                        >
+                            Connect to ESP32
+                        </button>
                     </div>
-                </div>
-                <div className="border border-white rounded-md shadow-lg p-4 text-white">
-                    <span className="font-semibold">Guard Length: {getGuardLength()}</span>
                 </div>
             </div>
         </div>

@@ -8,40 +8,58 @@ export async function GET() {
     const request = new Empty();
 
     try {
-        // Create a stream to receive points
         const stream = client.getPointStream(request);
+        let closed = false;
 
-        // Create a ReadableStream to send data to the client
         const readableStream = new ReadableStream({
             async start(controller) {
-                // Handle each point received from the server
                 stream.on('data', (point) => {
+                    if (closed) return;
+
                     const data = {
                         x: point.getX(),
                         y: point.getY(),
                         z: point.getZ(),
+                        roll: point.getRoll(),
+                        pitch: point.getPitch(),
+                        yaw: point.getYaw(),
                     };
-                    // Enqueue the point data to the ReadableStream
-                    controller.enqueue(new TextEncoder().encode(JSON.stringify(data) + '\n'));
+
+                    try {
+                        const encoded = new TextEncoder().encode(JSON.stringify(data) + "\n");
+                        controller.enqueue(encoded);
+                    } catch (err) {
+                        if (!closed) {
+                            controller.error(err);
+                            closed = true;
+                        }
+                    }
                 });
 
-                // Handle the end of the stream
                 stream.on('end', () => {
-                    controller.close();
+                    if (!closed) {
+                        controller.close();
+                        closed = true;
+                    }
                 });
 
-                // Handle errors
                 stream.on('error', (err) => {
-                    controller.error(err);
+                    if (!closed) {
+                        controller.error(err);
+                        closed = true;
+                    }
                 });
 
                 stream.on('abort', () => {
-                    console.error('Stream was aborted');
+                    console.warn('Stream aborted');
+                    if (!closed) {
+                        controller.close();
+                        closed = true;
+                    }
                 });
             },
         });
 
-        // Return the ReadableStream as the response
         return new Response(readableStream, {
             headers: { 'Content-Type': 'application/json' },
         });
