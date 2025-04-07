@@ -1,15 +1,25 @@
 "use client"
 import ThreeDMesh from "@/components/ThreeDMesh";
-import { Point } from "../map/page";
 import * as THREE from 'three';
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import LoadingData from "@/components/LoadingData";
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
+
+export type Point = {
+    x: number;
+    y: number;
+    z: number;
+    roll: number;
+    pitch: number;
+    yaw: number;
+}
 
 const TrimModePage = () => {
     const queryClient = useQueryClient();
     const abortControllerRef = useRef<AbortController | null>(null);
     const [rpy, setRpy] = useState(new THREE.Vector3(0, 0, 0));
+    const [currentAngle, setCurrentAngle] = useState<number | null>(null);
+    const [guardLength, setGuardLength] = useState(1);
 
     const getInitialMeshIfItExists = async () => {
         try {
@@ -75,7 +85,7 @@ const TrimModePage = () => {
         mutationFn: fetchPoints,
     });
 
-    const getGuardLength = () => {
+    const calculateGuardLength = () => {
         if (!points || points.length === 0) {
             return 1;
         }
@@ -88,9 +98,56 @@ const TrimModePage = () => {
         } else if (y >= -5 && y <= 5) {
             return 2;
         } else {
-            return 3
+            return 3;
         }
     };
+
+    // Calculate the angle based on guard length
+    const calculateAngle = (guardLength: number) => {
+        switch (guardLength) {
+            case 1:
+                return 60;
+            case 2:
+                return 120;
+            case 3:
+                return 180;
+            default:
+                return 60;
+        }
+    };
+
+    // Update guard length whenever points change
+    useEffect(() => {
+        const newGuardLength = calculateGuardLength();
+        setGuardLength(newGuardLength);
+    }, [points]);
+
+    // Call Bluetooth API when guard length changes, but only if the angle is different
+    useEffect(() => {
+        const sendBluetoothAngle = async () => {
+            const newAngle = calculateAngle(guardLength);
+            
+            // Only make the API call if the angle has changed
+            if (currentAngle !== newAngle) {
+                try {
+                    const res = await fetch(`http://localhost:3000/api/bluetooth?angle=${newAngle}`, {
+                        cache: "no-cache",
+                    });
+                    
+                    if (res.ok) {
+                        setCurrentAngle(newAngle);
+                        console.log(`Bluetooth angle updated to: ${newAngle}`);
+                    }
+                } catch (error) {
+                    console.error("Failed to update bluetooth angle:", error);
+                }
+            }
+        };
+
+        if (points.length > 0) {
+            sendBluetoothAngle();
+        }
+    }, [guardLength]);
 
     if (isLoading) {
         return <LoadingData />;
@@ -119,7 +176,10 @@ const TrimModePage = () => {
                         Stop Trimming
                     </button>
                 </div>
-                <span className="font-semibold mx-auto">Guard Length: {getGuardLength()}</span>
+                <div className="flex justify-between mx-auto">
+                    <span className="font-semibold">Guard Length: {guardLength}</span>
+                    <span className="font-semibold ml-4">Angle: {currentAngle}°</span>
+                </div>
             </div>
         </div>
     );
