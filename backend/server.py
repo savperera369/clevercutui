@@ -64,6 +64,7 @@ async def ble_connect_and_send(uart_command):
 
 class PointService(point_pb2_grpc.PointServiceServicer):
     def GetPointStream(self, request, context):
+        point_set = set()
         while True:
             x_random = random.uniform(-10, 10)
             y_random = random.uniform(-10, 10)
@@ -71,6 +72,11 @@ class PointService(point_pb2_grpc.PointServiceServicer):
             roll_random  = random.uniform(0, 360)
             pitch_random = random.uniform(0, 360)
             yaw_random = random.uniform(0, 360)
+            if (x_random, y_random, z_random) in point_set:
+                continue
+            else:
+                point_set.add((x_random, y_random, z_random))
+
             point = point_pb2.Point(
                 x=x_random,
                 y=y_random,
